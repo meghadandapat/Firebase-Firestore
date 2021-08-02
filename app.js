@@ -26,16 +26,43 @@ function renderCafe(doc) {
     })
 }
 
-//******GETTING DOCUMENTS******//
+//******GETTING DOCUMENTS USING GET METHOD******//
 //get is an async method which returns a promise
-db.collection('cafes').get().then((snapshot) => {
-    // console.log(snapshot.docs)
-    snapshot.docs.forEach(doc => {
-        //data method will get the actual data for us
-        console.log(doc.data())
-        renderCafe(doc)
+
+//USE WHERE METHOD WHEN YOU NEED TO FILTER OUT QUERIES
+//TAKES THREE PARAMETERS
+//db.collection('cafes').where('city', '==', 'Paris').get()
+
+//USE ORDERBY  Method TO ORDER data
+//Chaining of several methods is also possible
+
+// db.collection('cafes').get().then((snapshot) => {
+//     // console.log(snapshot.docs)
+//     snapshot.docs.forEach(doc => {
+//         //data method will get the actual data for us
+//         console.log(doc.data())
+//         renderCafe(doc)
+//     })
+// }) 
+
+
+//*******REAL TIME LISTENERS USING ONSNAPSHOT METHOD to make our app reactive, ie update without refresh*******//
+db.collection('cafes').orderBy('city').onSnapshot(snapshot => {
+    let changes = snapshot.docChanges();
+    console.log(changes)
+    changes.forEach(change => {
+        console.log(change.doc.data())
+        if (change.type === 'added')
+            renderCafe(change.doc)
+        else if (change.type === 'removed') {
+            let li = cafeList.querySelector('[data-id=' + change.doc.id + ']');
+            cafeList.removeChild(li);
+        }
+       
     })
 })
+
+
 
 //*******SAVING DATA USING ADD METHOD******//
 form.addEventListener('submit', (e) => {
@@ -50,3 +77,21 @@ form.addEventListener('submit', (e) => {
     form.city.value = '';
 
 })
+
+
+//********updating records using UPDATE METHOD*********//
+
+//pass the id of document inside doc method 
+/* db.collection('cafes').doc('DOgwUvtEQbjZohQNIeMr').update({
+    name: 'mario world'
+});
+
+db.collection('cafes').doc('DOgwUvtEQbjZohQNIeMr').update({
+    city: 'hong kong'
+}); */
+
+//******setting data using SET METHOD******// 
+//This completely ovrrides the document hence name will have no value here
+/* db.collection('cafes').doc('DOgwUvtEQbjZohQNIeMr').set({
+    city: 'hong kong'
+}); */
